@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Flip Clock</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      background-color: #0f0f11;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      color: #eaeaea;
+    }
+
+    /* Main Container */
+    .clock-container {
+      display: flex;
+      align-items: center;
+      gap: clamp(10px, 2.5vw, 30px);
+      padding: 20px;
+      cursor: pointer;
+    }
+
+    .digit-group {
+      display: flex;
+      gap: clamp(6px, 1.5vw, 14px);
+    }
+
+    .colon {
+      font-size: clamp(3rem, 12vw, 11rem);
+      font-weight: 700;
+      color: #3a3d45;
+      padding-bottom: clamp(6px, 1.5vw, 18px);
+      line-height: 1;
+    }
+
+    /* Flip Card Unit */
+    .flip-card {
+      position: relative;
+      width: clamp(60px, 18vw, 150px);
+      height: clamp(90px, 27vw, 220px);
+      font-size: clamp(4rem, 18vw, 12rem);
+      font-weight: 800;
+      line-height: 0;
+      border-radius: clamp(6px, 1.5vw, 16px);
+      background-color: #1b1c20;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6), 0 2px 4px rgba(0, 0, 0, 0.4);
+      perspective: 1000px;
+    }
+
+    /* Card Halves */
+    .half {
+      position: absolute;
+      left: 0;
+      width: 100%;
+      height: 50%;
+      overflow: hidden;
+      text-align: center;
+      background-color: #1e2025;
+      color: #dedede;
+    }
+
+    .half.top {
+      top: 0;
+      border-top-left-radius: inherit;
+      border-top-right-radius: inherit;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.6);
+    }
+
+    .half.bottom {
+      bottom: 0;
+      border-bottom-left-radius: inherit;
+      border-bottom-right-radius: inherit;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .half span {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      height: 200%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .half.top span {
+      top: 0;
+    }
+
+    .half.bottom span {
+      bottom: 0;
+    }
+
+    /* Animated Flaps */
+    .flap-leaf {
+      position: absolute;
+      left: 0;
+      width: 100%;
+      height: 50%;
+      overflow: hidden;
+      text-align: center;
+      background-color: #1e2025;
+      color: #dedede;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      transform-style: preserve-3d;
+      z-index: 2;
+    }
+
+    .flap-leaf.top-flip {
+      top: 0;
+      border-top-left-radius: inherit;
+      border-top-right-radius: inherit;
+      transform-origin: bottom;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.6);
+      animation: flip-top 0.4s ease-in forwards;
+    }
+
+    .flap-leaf.bottom-flip {
+      bottom: 0;
+      border-bottom-left-radius: inherit;
+      border-bottom-right-radius: inherit;
+      transform-origin: top;
+      transform: rotateX(90deg);
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      animation: flip-bottom 0.4s 0.4s ease-out forwards;
+    }
+
+    .flap-leaf span {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      height: 200%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .flap-leaf.top-flip span { top: 0; }
+    .flap-leaf.bottom-flip span { bottom: 0; }
+
+    @keyframes flip-top {
+      0% { transform: rotateX(0deg); }
+      100% { transform: rotateX(-90deg); }
+    }
+
+    @keyframes flip-bottom {
+      0% { transform: rotateX(90deg); }
+      100% { transform: rotateX(0deg); }
+    }
+
+    /* Controls Panel */
+    .controls {
+      position: fixed;
+      bottom: 24px;
+      display: flex;
+      gap: 12px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      z-index: 10;
+    }
+
+    .controls.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .btn {
+      background: rgba(40, 42, 48, 0.85);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+      padding: 10px 18px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .btn:active {
+      transform: scale(0.96);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="clock-container" id="clock">
+    <div class="digit-group">
+      <div class="flip-card" id="h1"><div class="half top"><span>0</span></div><div class="half bottom"><span>0</span></div></div>
+      <div class="flip-card" id="h2"><div class="half top"><span>0</span></div><div class="half bottom"><span>0</span></div></div>
+    </div>
+    <div class="colon">:</div>
+    <div class="digit-group">
+      <div class="flip-card" id="m1"><div class="half top"><span>0</span></div><div class="half bottom"><span>0</span></div></div>
+      <div class="flip-card" id="m2"><div class="half top"><span>0</span></div><div class="half bottom"><span>0</span></div></div>
+    </div>
+  </div>
+
+  <div class="controls" id="controls">
+    <button class="btn" id="formatToggle">24H</button>
+    <button class="btn" id="fullscreenToggle">Full Screen</button>
+  </div>
+
+  <script>
+    let is24Hour = localStorage.getItem('flip_clock_24h') === 'true';
+    let wakeLock = null;
+    let hideControlsTimeout = null;
+
+    const formatBtn = document.getElementById('formatToggle');
+    const fsBtn = document.getElementById('fullscreenToggle');
+    const controls = document.getElementById('controls');
+    const clock = document.getElementById('clock');
+
+    // Update Mode Button UI
+    function updateFormatButton() {
+      formatBtn.textContent = is24Hour ? '24H' : '12H';
+    }
+    updateFormatButton();
+
+    // Toggle 12/24 Hour Mode
+    formatBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      is24Hour = !is24Hour;
+      localStorage.setItem('flip_clock_24h', is24Hour);
+      updateFormatButton();
+      updateClock(true);
+    });
+
+    // Fullscreen Toggle
+    fsBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    });
+
+    // Controls Visibility Toggle
+    function showControls() {
+      controls.classList.add('visible');
+      clearTimeout(hideControlsTimeout);
+      hideControlsTimeout = setTimeout(() => {
+        controls.classList.remove('visible');
+      }, 4000);
+    }
+
+    document.addEventListener('click', showControls);
+    document.addEventListener('touchstart', showControls, { passive: true });
+
+    // Screen Wake Lock API
+    async function requestWakeLock() {
+      try {
+        if ('wakeLock' in navigator) {
+          wakeLock = await navigator.wakeLock.request('screen');
+        }
+      } catch (err) {}
+    }
+
+    document.addEventListener('visibilitychange', () => {
+      if (wakeLock !== null && document.visibilityState === 'visible') {
+        requestWakeLock();
+      }
+    });
+    requestWakeLock();
+
+    // Flip Card Mechanics
+    function flipDigit(elementId, newDigit, force = false) {
+      const card = document.getElementById(elementId);
+      const topHalf = card.querySelector('.half.top span');
+      const bottomHalf = card.querySelector('.half.bottom span');
+      const currentDigit = topHalf.textContent;
+
+      if (currentDigit === newDigit && !force) return;
+
+      if (force) {
+        topHalf.textContent = newDigit;
+        bottomHalf.textContent = newDigit;
+        return;
+      }
+
+      // Create animated flaps
+      const topFlip = document.createElement('div');
+      topFlip.className = 'flap-leaf top-flip';
+      topFlip.innerHTML = `<span>${currentDigit}</span>`;
+
+      const bottomFlip = document.createElement('div');
+      bottomFlip.className = 'flap-leaf bottom-flip';
+      bottomFlip.innerHTML = `<span>${newDigit}</span>`;
+
+      // Update background segments ahead of transition
+      topHalf.textContent = newDigit;
+
+      card.appendChild(topFlip);
+      card.appendChild(bottomFlip);
+
+      topFlip.addEventListener('animationend', () => topFlip.remove());
+      bottomFlip.addEventListener('animationend', () => {
+        bottomHalf.textContent = newDigit;
+        bottomFlip.remove();
+      });
+    }
+
+    // Time Retrieval and Updating
+    function updateClock(force = false) {
+      const now = new Date();
+      let hours = now.getHours();
+      const minutes = now.getMinutes();
+
+      if (!is24Hour) {
+        hours = hours % 12 || 12;
+      }
+
+      const hStr = String(hours).padStart(2, '0');
+      const mStr = String(minutes).padStart(2, '0');
+
+      flipDigit('h1', hStr[0], force);
+      flipDigit('h2', hStr[1], force);
+      flipDigit('m1', mStr[0], force);
+      flipDigit('m2', mStr[1], force);
+    }
+
+    // Initialize & Loop
+    updateClock(true);
+    setInterval(updateClock, 1000);
+  </script>
+</body>
+</html>
