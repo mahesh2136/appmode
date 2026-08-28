@@ -164,11 +164,13 @@
       100% { transform: rotateX(0deg); }
     }
 
-    /* Controls Panel */
-    .controls {
+    /* Controls & Footer Container */
+    .controls-wrapper {
       position: fixed;
-      bottom: 24px;
+      bottom: 20px;
       display: flex;
+      flex-direction: column;
+      align-items: center;
       gap: 12px;
       opacity: 0;
       pointer-events: none;
@@ -176,9 +178,14 @@
       z-index: 10;
     }
 
-    .controls.visible {
+    .controls-wrapper.visible {
       opacity: 1;
       pointer-events: auto;
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
     }
 
     .btn {
@@ -197,6 +204,18 @@
     .btn:active {
       transform: scale(0.96);
     }
+
+    .credits {
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.5);
+      letter-spacing: 0.5px;
+      text-align: center;
+    }
+
+    .credits span {
+      color: rgba(255, 255, 255, 0.85);
+      font-weight: 500;
+    }
   </style>
 </head>
 <body>
@@ -213,9 +232,12 @@
     </div>
   </div>
 
-  <div class="controls" id="controls">
-    <button class="btn" id="formatToggle">24H</button>
-    <button class="btn" id="fullscreenToggle">Full Screen</button>
+  <div class="controls-wrapper" id="controlsWrapper">
+    <div class="controls">
+      <button class="btn" id="formatToggle">24H</button>
+      <button class="btn" id="fullscreenToggle">Full Screen</button>
+    </div>
+    <div class="credits">Created by <span>Mahesh Arkalla</span></div>
   </div>
 
   <script>
@@ -225,7 +247,7 @@
 
     const formatBtn = document.getElementById('formatToggle');
     const fsBtn = document.getElementById('fullscreenToggle');
-    const controls = document.getElementById('controls');
+    const controlsWrapper = document.getElementById('controlsWrapper');
     const clock = document.getElementById('clock');
 
     // Update Mode Button UI
@@ -253,12 +275,12 @@
       }
     });
 
-    // Controls Visibility Toggle
+    // Controls & Credits Visibility Toggle
     function showControls() {
-      controls.classList.add('visible');
+      controlsWrapper.classList.add('visible');
       clearTimeout(hideControlsTimeout);
       hideControlsTimeout = setTimeout(() => {
-        controls.classList.remove('visible');
+        controlsWrapper.classList.remove('visible');
       }, 4000);
     }
 
