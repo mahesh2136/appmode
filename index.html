@@ -14,7 +14,7 @@
     }
 
     body {
-      background-color: #0f0f11;
+      background-color: #0d0e11;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       min-height: 100vh;
       display: flex;
@@ -24,7 +24,7 @@
       color: #eaeaea;
     }
 
-    /* Main Container */
+    /* Main Clock Wrapper */
     .clock-container {
       display: flex;
       align-items: center;
@@ -36,8 +36,10 @@
     .digit-group {
       display: flex;
       gap: clamp(6px, 1.5vw, 14px);
+      position: relative;
     }
 
+    /* Static Colon */
     .colon {
       font-size: clamp(3rem, 12vw, 11rem);
       font-weight: 700;
@@ -55,12 +57,32 @@
       font-weight: 800;
       line-height: 0;
       border-radius: clamp(6px, 1.5vw, 16px);
-      background-color: #1b1c20;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6), 0 2px 4px rgba(0, 0, 0, 0.4);
-      perspective: 1000px;
+      background-color: #16171b;
+      box-shadow: 0 14px 28px rgba(0, 0, 0, 0.7), 0 3px 6px rgba(0, 0, 0, 0.5);
+      perspective: 1200px;
     }
 
-    /* Card Halves */
+    /* AM/PM Split-Flap Card */
+    .flip-card.ampm-card {
+      position: absolute;
+      right: calc(-1 * clamp(38px, 6.5vw, 68px));
+      bottom: clamp(6px, 1.8vw, 18px);
+      width: clamp(32px, 5.5vw, 56px);
+      height: clamp(36px, 6vw, 62px);
+      font-size: clamp(0.75rem, 1.8vw, 1.4rem);
+      font-weight: 800;
+      border-radius: clamp(4px, 0.8vw, 8px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .flip-card.ampm-card.hidden {
+      opacity: 0;
+      transform: scale(0.75);
+      pointer-events: none;
+    }
+
+    /* Static Card Halves */
     .half {
       position: absolute;
       left: 0;
@@ -68,22 +90,27 @@
       height: 50%;
       overflow: hidden;
       text-align: center;
-      background-color: #1e2025;
+      background-color: #1e2026;
       color: #dedede;
+    }
+
+    .ampm-card .half {
+      background-color: #17181d;
+      color: #8b909a;
     }
 
     .half.top {
       top: 0;
       border-top-left-radius: inherit;
       border-top-right-radius: inherit;
-      border-bottom: 1px solid rgba(0, 0, 0, 0.6);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.7);
     }
 
     .half.bottom {
       bottom: 0;
       border-bottom-left-radius: inherit;
       border-bottom-right-radius: inherit;
-      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
     }
 
     .half span {
@@ -97,15 +124,10 @@
       justify-content: center;
     }
 
-    .half.top span {
-      top: 0;
-    }
+    .half.top span { top: 0; }
+    .half.bottom span { bottom: 0; }
 
-    .half.bottom span {
-      bottom: 0;
-    }
-
-    /* Animated Flaps */
+    /* Animated 3D Flap Leaves */
     .flap-leaf {
       position: absolute;
       left: 0;
@@ -113,7 +135,7 @@
       height: 50%;
       overflow: hidden;
       text-align: center;
-      background-color: #1e2025;
+      background-color: #1e2026;
       color: #dedede;
       backface-visibility: hidden;
       -webkit-backface-visibility: hidden;
@@ -121,13 +143,18 @@
       z-index: 2;
     }
 
+    .ampm-card .flap-leaf {
+      background-color: #17181d;
+      color: #8b909a;
+    }
+
     .flap-leaf.top-flip {
       top: 0;
       border-top-left-radius: inherit;
       border-top-right-radius: inherit;
       transform-origin: bottom;
-      border-bottom: 1px solid rgba(0, 0, 0, 0.6);
-      animation: flip-top 0.4s ease-in forwards;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.7);
+      animation: flip-top 0.35s ease-in forwards;
     }
 
     .flap-leaf.bottom-flip {
@@ -136,8 +163,8 @@
       border-bottom-right-radius: inherit;
       transform-origin: top;
       transform: rotateX(90deg);
-      border-top: 1px solid rgba(255, 255, 255, 0.05);
-      animation: flip-bottom 0.4s 0.4s ease-out forwards;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      animation: flip-bottom 0.35s 0.35s ease-out forwards;
     }
 
     .flap-leaf span {
@@ -154,6 +181,25 @@
     .flap-leaf.top-flip span { top: 0; }
     .flap-leaf.bottom-flip span { bottom: 0; }
 
+    /* Dynamic Shadow Overlays */
+    .shadow-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    .flap-leaf.top-flip .shadow-layer {
+      animation: shadow-fade-in 0.35s ease-in forwards;
+    }
+
+    .flap-leaf.bottom-flip .shadow-layer {
+      animation: shadow-fade-out 0.35s 0.35s ease-out forwards;
+    }
+
     @keyframes flip-top {
       0% { transform: rotateX(0deg); }
       100% { transform: rotateX(-90deg); }
@@ -164,7 +210,17 @@
       100% { transform: rotateX(0deg); }
     }
 
-    /* Controls & Footer Container */
+    @keyframes shadow-fade-in {
+      0% { background: rgba(0, 0, 0, 0); }
+      100% { background: rgba(0, 0, 0, 0.7); }
+    }
+
+    @keyframes shadow-fade-out {
+      0% { background: rgba(0, 0, 0, 0.7); }
+      100% { background: rgba(0, 0, 0, 0); }
+    }
+
+    /* Controls & Footer */
     .controls-wrapper {
       position: fixed;
       bottom: 20px;
@@ -185,7 +241,54 @@
 
     .controls {
       display: flex;
-      gap: 12px;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .segmented-switch {
+      position: relative;
+      display: flex;
+      background: rgba(30, 32, 38, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 24px;
+      padding: 3px;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      width: 120px;
+      height: 40px;
+    }
+
+    .switch-indicator {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: calc(50% - 3px);
+      height: calc(100% - 6px);
+      background: #3b82f6;
+      border-radius: 20px;
+      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+    }
+
+    .segmented-switch.is-24h .switch-indicator {
+      transform: translateX(100%);
+    }
+
+    .switch-option {
+      flex: 1;
+      text-align: center;
+      line-height: 34px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.5);
+      z-index: 1;
+      transition: color 0.2s ease;
+    }
+
+    .switch-option.active {
+      color: #ffffff;
     }
 
     .btn {
@@ -193,11 +296,15 @@
       backdrop-filter: blur(10px);
       border: 1px solid rgba(255, 255, 255, 0.15);
       color: #ffffff;
-      padding: 10px 18px;
-      font-size: 0.95rem;
+      padding: 0 16px;
+      height: 40px;
+      font-size: 0.9rem;
       font-weight: 600;
       border-radius: 20px;
       cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       transition: background 0.2s, transform 0.1s;
     }
 
@@ -229,12 +336,21 @@
     <div class="digit-group">
       <div class="flip-card" id="m1"><div class="half top"><span>0</span></div><div class="half bottom"><span>0</span></div></div>
       <div class="flip-card" id="m2"><div class="half top"><span>0</span></div><div class="half bottom"><span>0</span></div></div>
+      <div class="flip-card ampm-card" id="ampmCard">
+        <div class="half top"><span>AM</span></div>
+        <div class="half bottom"><span>AM</span></div>
+      </div>
     </div>
   </div>
 
   <div class="controls-wrapper" id="controlsWrapper">
     <div class="controls">
-      <button class="btn" id="formatToggle">24H</button>
+      <div class="segmented-switch" id="formatSwitch">
+        <div class="switch-indicator"></div>
+        <div class="switch-option" id="opt12">12H</div>
+        <div class="switch-option" id="opt24">24H</div>
+      </div>
+      <button class="btn" id="soundToggle">Sound: Click</button>
       <button class="btn" id="fullscreenToggle">Full Screen</button>
     </div>
     <div class="credits">Created by <span>Mahesh Arkalla</span></div>
@@ -242,30 +358,134 @@
 
   <script>
     let is24Hour = localStorage.getItem('flip_clock_24h') === 'true';
+    let soundPreset = localStorage.getItem('flip_clock_sound') || 'click';
     let wakeLock = null;
     let hideControlsTimeout = null;
 
-    const formatBtn = document.getElementById('formatToggle');
+    const formatSwitch = document.getElementById('formatSwitch');
+    const opt12 = document.getElementById('opt12');
+    const opt24 = document.getElementById('opt24');
+    const ampmCard = document.getElementById('ampmCard');
+    const soundBtn = document.getElementById('soundToggle');
     const fsBtn = document.getElementById('fullscreenToggle');
     const controlsWrapper = document.getElementById('controlsWrapper');
-    const clock = document.getElementById('clock');
 
-    // Update Mode Button UI
-    function updateFormatButton() {
-      formatBtn.textContent = is24Hour ? '24H' : '12H';
+    let audioCtx = null;
+    function getAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
     }
-    updateFormatButton();
 
-    // Toggle 12/24 Hour Mode
-    formatBtn.addEventListener('click', (e) => {
+    function playFlipSound() {
+      if (soundPreset === 'mute') return;
+
+      const ctx = getAudioContext();
+      const now = ctx.currentTime;
+
+      if (soundPreset === 'click') {
+        const bufferSize = ctx.sampleRate * 0.03;
+        const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.25));
+        }
+
+        const noise = ctx.createBufferSource();
+        noise.buffer = buffer;
+
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(1400, now);
+        filter.Q.setValueAtTime(3.0, now);
+
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0.6, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
+
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+        noise.start(now);
+
+      } else if (soundPreset === 'wood') {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(220, now);
+        osc.frequency.exponentialRampToValueAtTime(40, now + 0.05);
+
+        gain.gain.setValueAtTime(0.8, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.05);
+      }
+    }
+
+    function updateSoundUI() {
+      const labels = { click: 'Sound: Click', wood: 'Sound: Wood', mute: 'Sound: Mute' };
+      soundBtn.textContent = labels[soundPreset] || 'Sound: Click';
+    }
+    updateSoundUI();
+
+    soundBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      is24Hour = !is24Hour;
-      localStorage.setItem('flip_clock_24h', is24Hour);
-      updateFormatButton();
-      updateClock(true);
+      getAudioContext();
+      if (soundPreset === 'click') soundPreset = 'wood';
+      else if (soundPreset === 'wood') soundPreset = 'mute';
+      else soundPreset = 'click';
+
+      localStorage.setItem('flip_clock_sound', soundPreset);
+      updateSoundUI();
+      playFlipSound();
     });
 
-    // Fullscreen Toggle
+    function updateFormatUI() {
+      if (is24Hour) {
+        formatSwitch.classList.add('is-24h');
+        opt24.classList.add('active');
+        opt12.classList.remove('active');
+        ampmCard.classList.add('hidden');
+      } else {
+        formatSwitch.classList.remove('is-24h');
+        opt12.classList.add('active');
+        opt24.classList.remove('active');
+        ampmCard.classList.remove('hidden');
+      }
+    }
+    updateFormatUI();
+
+    function set24HourMode(value) {
+      is24Hour = value;
+      localStorage.setItem('flip_clock_24h', is24Hour);
+      updateFormatUI();
+      updateClock(true);
+    }
+
+    formatSwitch.addEventListener('click', (e) => {
+      e.stopPropagation();
+      set24HourMode(!is24Hour);
+    });
+
+    let touchStartX = 0;
+    formatSwitch.addEventListener('touchstart', (e) => {
+      touchStartX = e.touches[0].clientX;
+    }, { passive: true });
+
+    formatSwitch.addEventListener('touchend', (e) => {
+      const touchEndX = e.changedTouches[0].clientX;
+      const diffX = touchEndX - touchStartX;
+      if (diffX > 20) set24HourMode(true);
+      else if (diffX < -20) set24HourMode(false);
+    }, { passive: true });
+
     fsBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       if (!document.fullscreenElement) {
@@ -275,7 +495,6 @@
       }
     });
 
-    // Controls & Credits Visibility Toggle
     function showControls() {
       controlsWrapper.classList.add('visible');
       clearTimeout(hideControlsTimeout);
@@ -284,10 +503,15 @@
       }, 4000);
     }
 
-    document.addEventListener('click', showControls);
-    document.addEventListener('touchstart', showControls, { passive: true });
+    document.addEventListener('click', () => {
+      getAudioContext();
+      showControls();
+    });
+    document.addEventListener('touchstart', () => {
+      getAudioContext();
+      showControls();
+    }, { passive: true });
 
-    // Screen Wake Lock API
     async function requestWakeLock() {
       try {
         if ('wakeLock' in navigator) {
@@ -303,63 +527,64 @@
     });
     requestWakeLock();
 
-    // Flip Card Mechanics
-    function flipDigit(elementId, newDigit, force = false) {
+    function flipElement(elementId, newValue, force = false) {
       const card = document.getElementById(elementId);
+      if (!card) return;
+
       const topHalf = card.querySelector('.half.top span');
       const bottomHalf = card.querySelector('.half.bottom span');
-      const currentDigit = topHalf.textContent;
+      const currentValue = topHalf.textContent;
 
-      if (currentDigit === newDigit && !force) return;
+      if (currentValue === newValue && !force) return;
 
       if (force) {
-        topHalf.textContent = newDigit;
-        bottomHalf.textContent = newDigit;
+        topHalf.textContent = newValue;
+        bottomHalf.textContent = newValue;
         return;
       }
 
-      // Create animated flaps
+      playFlipSound();
+
       const topFlip = document.createElement('div');
       topFlip.className = 'flap-leaf top-flip';
-      topFlip.innerHTML = `<span>${currentDigit}</span>`;
+      topFlip.innerHTML = `<span>${currentValue}</span><div class="shadow-layer"></div>`;
 
       const bottomFlip = document.createElement('div');
       bottomFlip.className = 'flap-leaf bottom-flip';
-      bottomFlip.innerHTML = `<span>${newDigit}</span>`;
+      bottomFlip.innerHTML = `<span>${newValue}</span><div class="shadow-layer"></div>`;
 
-      // Update background segments ahead of transition
-      topHalf.textContent = newDigit;
+      topHalf.textContent = newValue;
 
       card.appendChild(topFlip);
       card.appendChild(bottomFlip);
 
       topFlip.addEventListener('animationend', () => topFlip.remove());
       bottomFlip.addEventListener('animationend', () => {
-        bottomHalf.textContent = newDigit;
+        bottomHalf.textContent = newValue;
         bottomFlip.remove();
       });
     }
 
-    // Time Retrieval and Updating
     function updateClock(force = false) {
       const now = new Date();
       let hours = now.getHours();
       const minutes = now.getMinutes();
 
       if (!is24Hour) {
+        const period = hours >= 12 ? 'PM' : 'AM';
+        flipElement('ampmCard', period, force);
         hours = hours % 12 || 12;
       }
 
       const hStr = String(hours).padStart(2, '0');
       const mStr = String(minutes).padStart(2, '0');
 
-      flipDigit('h1', hStr[0], force);
-      flipDigit('h2', hStr[1], force);
-      flipDigit('m1', mStr[0], force);
-      flipDigit('m2', mStr[1], force);
+      flipElement('h1', hStr[0], force);
+      flipElement('h2', hStr[1], force);
+      flipElement('m1', mStr[0], force);
+      flipElement('m2', mStr[1], force);
     }
 
-    // Initialize & Loop
     updateClock(true);
     setInterval(updateClock, 1000);
   </script>
